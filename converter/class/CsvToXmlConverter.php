@@ -55,10 +55,84 @@ class CsvToXmlConverter
             echo "| fileName={$fileName}",PHP_EOL;
 
             // CSVファイルを読込
+            $csvItem = $this->_loadCSV($filePath);
+            echo "| " . print_r($csvItem,true),PHP_EOL;
+
             // データXMLを生成
         }
 
         return false;
+    }
+
+
+    private function _getFieldSetting()
+    {
+        $fieldSettings = array (
+            0  => 'code',
+            5  => 'position',
+            8  => 'department',
+            9  => 'name',
+            10 => 'item1',
+            11 => 'item2',
+            12 => 'item3',
+            13 => 'item4',
+        );
+
+        return $fieldSettings;
+    }
+
+    private function _loadCSV($csvFilePath, $countHeaderLines=1)
+    {
+        $data = file_get_contents($csvFilePath);
+        $data = mb_convert_encoding($data, 'UTF-8', 'SJIS-win');
+        $temp = tmpfile();
+        $meta = stream_get_meta_data($temp);
+        fwrite($temp, $data);
+        rewind($temp);
+
+        $fieldSettings = $this->_getFieldSetting();
+
+        $csvFile = new SplFileObject($meta['uri']);
+        $csvFile->fwrite($data);
+        $csvFile->rewind();
+        $csvFile->setFlags(SplFileObject::READ_CSV);
+
+        $countLines = 1;
+        $csvItems   = array();
+        foreach ($csvFile as $line) {
+            if ($countLines <= $countHeaderLines) {
+                // ヘッダー行を飛ばす
+                $countLines++;
+                continue;
+            }
+
+            if (is_null($line[0])) {
+                continue;
+            }
+            $csvItems[] = $this->_createCsvItem($line, $fieldSettings);
+        }
+
+        return $csvItems;
+    }
+
+    private function _createCsvItem($fields, $fieldSettings)
+    {
+        if (empty($fields) || is_array($fields) === false) {
+            return array();
+        }
+        if (empty($fieldSettings) || is_array($fieldSettings) === false) {
+            return array();
+        }
+
+        $csvItem = array();
+        foreach ($fieldSettings as $index => $name) {
+            if (isset($fields[$index]) === false) {
+                $csvItem[$name] = '';
+                continue;
+            }
+            $csvItem[$name] = $fields[$index];
+        }
+        return $csvItem;
     }
 
 
