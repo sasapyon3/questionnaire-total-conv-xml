@@ -14,26 +14,49 @@ class CsvToXmlConverter
 
     public function convert($argc, $argv)
     {
-        $csvDataFolder = "./data/csv";
-        $xmlOutputPath = "./data/xml";
-        if ($argc > 0) {
+        $basePath = dirname(__FILE__) . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "..";
+        $csvDataFolder   = "\data\csv";
+        $xmlOutputFolder = "\data\xml";
+        if ($argc > 1) {
             $csvDataFolder = $argv[1];
-            if ($argc > 1) {
-                $xmlOutputPath = $argv[2];
+            if ($argc > 2) {
+                $xmlOutputFolder = $argv[2];
             }
         }
 
-        if (file_exists($csvDataFolder) === false) {
-            echo "csv data folder does not exist.";
+        $csvDataPath = $basePath . $csvDataFolder;
+
+        if (is_dir($csvDataPath) === false) {
+            echo "csv data folder does not exist. : {$csvDataPath}",PHP_EOL;
             return false;
         }
+        $handle = opendir($csvDataPath);
+        if ($handle === false) {
+            echo "csv data folder does not opened. : {$csvDataPath}",PHP_EOL;
+            return false;
+        }
+
+        $xmlOutputPath = $basePath . $xmlOutputFolder;
         if (file_exists($xmlOutputPath) === false) {
             mkdir($xmlOutputPath);
         }
 
         // CSVフォルダのファイルの数だけ繰り返し
-        // CSVファイルを読込
-        // データXMLを生成
+        $extList = array('.csv', '.CSV');
+        while (($fileName = readdir($handle)) !== false) {
+            $filePath = $csvDataPath . DIRECTORY_SEPARATOR . $fileName;
+            if (is_file($filePath) === false) {
+                continue;
+            }
+            if (preg_match('/(' . implode('|', $extList) . ')$/', $fileName) === 0) {
+                continue;
+            }
+
+            echo "| fileName={$fileName}",PHP_EOL;
+
+            // CSVファイルを読込
+            // データXMLを生成
+        }
 
         return false;
     }
