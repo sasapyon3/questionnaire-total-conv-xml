@@ -42,6 +42,7 @@ class CsvToXmlConverter
         }
 
         // CSVフォルダのファイルの数だけ繰り返し
+        $csvList = array();
         $extList = array('.csv', '.CSV');
         while (($fileName = readdir($handle)) !== false) {
             $filePath = $csvDataPath . DIRECTORY_SEPARATOR . $fileName;
@@ -55,13 +56,19 @@ class CsvToXmlConverter
             echo "| fileName={$fileName}",PHP_EOL;
 
             // CSVファイルを読込
-            $csvItem = $this->_loadCSV($filePath);
-            echo "| " . print_r($csvItem,true),PHP_EOL;
-
-            // データXMLを生成
+            $csvItems = $this->_loadCSV($filePath);
+            if ($csvItems) {
+                $csvList[$fileName] = $csvItems;
+            }
         }
 
-        return false;
+        // データXMLを生成
+        $result = $this->_exportXML($csvList, $xmlOutputPath);
+        if($result === false) {
+            echo "[ERROR] export XML error! \n\n";
+        }
+
+        return $result;
     }
 
 
@@ -135,5 +142,10 @@ class CsvToXmlConverter
         return $csvItem;
     }
 
+
+    private function _exportXML($csvList, $xmlOutputPath)
+    {
+        return false;
+    }
 
 }
