@@ -145,6 +145,21 @@ class CsvToXmlConverter
 
     private function _exportXML($csvList, $xmlOutputPath)
     {
+        foreach ($csvList as $fileName=>$csvItems) {
+            $sxe = new SimpleXMLElement('<?xml version="1.0" encoding="utf-8" standalone="yes" ?><data></data>', null, false);
+            foreach ($csvItems as $csvItem) {
+                $sxeBase = $sxe->addChild('item');
+
+                foreach ($csvItem as $key=>$val) {
+                    //echo "{$key}=>{$val}", PHP_EOL;
+                    $sxeBase->addChild($key, htmlspecialchars($val, ENT_QUOTES));
+                }
+            }
+
+            $xmlPath = $xmlOutputPath . DIRECTORY_SEPARATOR . basename($fileName, '.csv') . '.xml';
+            $sxe->asXML($xmlPath);
+        }
+
         return false;
     }
 
