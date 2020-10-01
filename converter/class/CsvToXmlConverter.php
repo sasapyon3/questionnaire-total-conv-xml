@@ -57,6 +57,7 @@ class CsvToXmlConverter
 
             // CSVファイルを読込
             $csvItems = $this->_loadCSV($filePath);
+            $csvItems = $this->_dataShaping($csvItems);
             if ($csvItems) {
                 $csvList[$fileName] = $csvItems;
             }
@@ -71,9 +72,58 @@ class CsvToXmlConverter
         return $result;
     }
 
+    private function _dataShaping($csvItems)
+    {
+        if (empty($csvItems)) {
+            return $csvItems;
+        }
+
+        foreach ($csvItems as $index=>$csvItem) {
+            if (empty($csvItem)) {
+                continue;
+            }
+            foreach ($csvItem as $key=>$val) {
+                if (empty($val)) {
+                    continue;
+                }
+                switch ($key) {
+                    case 'item1':
+                    case 'item2':
+                    case 'item3':
+                    case 'item4':
+                        $val = preg_replace("/[ 　]+$/u","", $val);
+                        $val = preg_replace("/(\n\r|\n|\r)+$/u","", $val);
+                        if (preg_match("/[。!！.．]+$/u", $val) !== 1) {
+                            $val = $val . "。";
+                        } else {
+                            echo ">> $val",PHP_EOL;
+                        }
+                        $csvItem[$key] = $val;
+                        break;
+                }
+            }
+
+            $csvItems[$index] = $csvItem;
+        }
+
+
+        return $csvItems;
+    }
+
 
     private function _getFieldSetting()
     {
+        $fieldSettings = array (
+            0  => 'code',
+            2  => 'position',
+            1  => 'department',
+            3  => 'name',
+            4 => 'item1',
+            5 => 'item2',
+            6 => 'item3',
+            7 => 'item4',
+        );
+/*
         $fieldSettings = array (
             0  => 'code',
             5  => 'position',
@@ -84,7 +134,7 @@ class CsvToXmlConverter
             12 => 'item3',
             13 => 'item4',
         );
-
+*/
         return $fieldSettings;
     }
 
